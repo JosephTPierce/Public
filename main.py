@@ -9,10 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
 
 # Setting up Dirs
 FINAL_OUTPUT_DIR = "output"
@@ -39,7 +36,7 @@ ACCEPTED_COUNTRIES = {
 }
 TWO_LETTER_COUNTRY = re.compile(r"^[A-Z]{2}$")
 
-# Scraping funcs
+# Scraping Functions
 
 def clean_rank(rank_text):
     return rank_text.strip().rstrip('.')
@@ -118,7 +115,7 @@ def scrape_top_coins(driver):
     url = "https://miningpoolstats.stream/"
     driver.get(url)
     
-    WebDriverWait(driver, 20).until(
+    WebDriverWait(driver, 30).until(  # Increased timeout
         EC.presence_of_element_located((By.ID, "coins"))
     )
     time.sleep(3)
@@ -187,7 +184,7 @@ def scrape_coin_pools(driver, coin_data):
         driver.get(url)
         
         try:
-            WebDriverWait(driver, 20).until(
+            WebDriverWait(driver, 30).until(  # Increased timeout
                 EC.presence_of_element_located((By.ID, "pools"))
             )
             time.sleep(3)
@@ -364,47 +361,29 @@ def clean_pool_data():
     
     print(f"Cleaned {cleaned_count} pools")
 
-# Cross-platform driver setup
+# Simplified driver setup for Ubuntu Server
 def setup_driver():
-    os_name = platform.system()
-    print(f"Detected OS: {os_name}")
-    
-    # Try Chrome on mac for testing
-    if os_name == "Darwin":  # mac
-        try:
-            options = webdriver.ChromeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--disable-gpu")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            
-            service = ChromeService(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
-            print("Using Chrome on mac")
-            return driver
-        except Exception as e:
-            print(f"Chrome setup failed on mac: {e}")
-            print("Falling back to Firefox on mac...")
-    
-    # For Linux or if Chrome fails on mac
+    print("Setting up Firefox driver for Ubuntu Server")
     try:
+        # Configure Firefox options
         options = webdriver.FirefoxOptions()
         options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         
-        # Use different driver manager for mac vs linux
-        if os_name == "Darwin":  # mac
-            service = FirefoxService(GeckoDriverManager().install())
-        else:  # linux
-            # Use system-installed Firefox and geckodriver
-            options.binary_location = "/usr/bin/firefox"
-            service = FirefoxService(executable_path="/usr/local/bin/geckodriver")
+        # Set explicit paths for Ubuntu Server
+        options.binary_location = "/usr/bin/firefox"
+        service = FirefoxService(executable_path="/usr/local/bin/geckodriver")
         
         driver = webdriver.Firefox(service=service, options=options)
-        print(f"Using Firefox browser for {os_name}")
+        driver.set_window_size(1920, 1080)
+        print("Firefox driver initialized successfully")
         return driver
     except Exception as e:
         print(f"Firefox setup failed: {e}")
-        raise RuntimeError("Error: Please install Chrome or Firefox.")
+        traceback.print_exc()
+        raise RuntimeError("Failed to initialize Firefox driver")
 
 def main():
     start_time = time.time()
