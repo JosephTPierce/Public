@@ -4,12 +4,12 @@ import re
 import time
 import csv
 import traceback
-import platform
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from pyvirtualdisplay import Display
 
 # Setting up Dirs
 FINAL_OUTPUT_DIR = "output"
@@ -113,27 +113,46 @@ def clean_blocks_data(blocks_text):
 def scrape_top_coins(driver):
     print("Getting top coins")
     url = "https://miningpoolstats.stream/"
-    driver.get(url)
     
-    WebDriverWait(driver, 30).until(  # Increased timeout
-        EC.presence_of_element_located((By.ID, "coins"))
-    )
-    time.sleep(3)
+    try:
+        driver.get(url)
+        print(f"Loaded URL: {url}")
+    except Exception as e:
+        print(f"Failed to load URL: {e}")
+        return []
     
-    table = driver.find_element(By.ID, "coins")
-    tbody = table.find_element(By.TAG_NAME, "tbody")
-    rows = tbody.find_elements(By.TAG_NAME, "tr")
+    try:
+        WebDriverWait(driver, 60).until(  # Increased timeout to 60 seconds
+            EC.presence_of_element_located((By.ID, "coins"))
+        )
+        print("Coins table found")
+    except TimeoutException:
+        print("Timed out waiting for coins table")
+        return []
+    except Exception as e:
+        print(f"Error waiting for coins table: {e}")
+        return []
     
-    print(f"Found {len(rows)} rows")
+    time.sleep(3)  # Allow JavaScript to render content
+    
+    try:
+        table = driver.find_element(By.ID, "coins")
+        tbody = table.find_element(By.TAG_NAME, "tbody")
+        rows = tbody.find_elements(By.TAG_NAME, "tr")
+        print(f"Found {len(rows)} rows in coins table")
+    except Exception as e:
+        print(f"Error finding table rows: {e}")
+        return []
+    
     data = []
     
     for i, row in enumerate(rows[:20]):
-        cells = row.find_elements(By.TAG_NAME, "td")
-        if len(cells) < 13:
-            print(f"Row {i+1} has only {len(cells)} fields, skipping")
-            continue
-            
         try:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) < 13:
+                print(f"Row {i+1} has only {len(cells)} cells, skipping")
+                continue
+                
             rank = clean_rank(get_text(cells[0]))
             coin = clean_coin(get_text(cells[1]))
             algo = get_text(cells[2])
@@ -157,56 +176,94 @@ def scrape_top_coins(driver):
     # Save coins to CSV at output directory
     top_coins_file = os.path.join(FINAL_OUTPUT_DIR, "Top20Coins.csv")
     
-    headers = [
-        "Rank", "Coin", "Algorithm", "MarketCap", "Emission(Last 24h)",
-        "Price(USD)", "7Day Price Change", "Volume(Last 24h)",
-        "Pools(known)", "PoolsHashrate", "NetworkHashrate", "LastBlock Found"
-    ]
-    
-    with open(top_coins_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(headers)
-        writer.writerows(data)
-    
-    print(f"Top coins saved to: {top_coins_file}")
-    return data
+    try:
+        headers = [
+            "Rank", "Coin", "Algorithm", "MarketCap", "Emission(Last 24h)",
+            "Price(USD)", "7Day Price Change", "Volume(Last 24h)",
+            "Pools(known)", "PoolsHashrate", "NetworkHashrate", "LastBlock Found"
+        ]
+        
+        with open(top_coins_file, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            writer.writerows(data)
+        
+        print(f"Top coins saved to: {top_coins_file}")
+        return data
+    except Exception as e:
+        print(f"Failed to save top coins CSV: {e}")
+        return []
 
 def scrape_coin_pools(driver, coin_data):
-    print("\nScraping pool data\n")
+    print("\nScraping pool data")
+    
+    if not coin_data:
+        print("No coin data available for pool scraping")
+        return
     
     for row in coin_data:
+        if len(row) < 2:
+            print("Skipping invalid coin data row")
+            continue
+            
         rank = row[0]
         coin_display_name = row[1]
         coin_url_name = process_coin_name(coin_display_name)
         url = f"https://miningpoolstats.stream/{coin_url_name}"
         
         print(f"Scraping {coin_display_name}")
-        driver.get(url)
         
         try:
-            WebDriverWait(driver, 30).until(  # Increased timeout
+            driver.get(url)
+            print(f"Loaded coin URL: {url}")
+        except Exception as e:
+            print(f"Failed to load coin URL: {e}")
+            continue
+        
+        try:
+            # Dismiss cookie consent if it appears
+            try:
+                cookie_accept = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.ID, "cookie-consent-accept"))
+                )
+                cookie_accept.click()
+                print("Dismissed cookie consent")
+                time.sleep(1)
+            except:
+                pass  # Cookie consent not found
+            
+            WebDriverWait(driver, 60).until(  # Increased timeout to 60 seconds
                 EC.presence_of_element_located((By.ID, "pools"))
             )
-            time.sleep(3)
+            print("Pools table found")
+            time.sleep(3)  # Allow JavaScript to render
             
             pools_table = driver.find_element(By.ID, "pools")
             tbody = pools_table.find_element(By.TAG_NAME, "tbody")
             rows = tbody.find_elements(By.TAG_NAME, "tr")
-            
-            headers = [
-                "Rank", "Country", "Pool", "PoolFee", 
-                "Daily PPS $ / 100 TH", "MinPay", "Miners", 
-                "Hashrate", "Network %", "Blocks and Expected Block Diff", 
-                "BlockHeight", "LastFound"
-            ]
-            
-            coin_pools = []
-            count = 0
-            
-            for row in rows:
-                if "show1100" in row.get_attribute("class"):
-                    continue
-                    
+            print(f"Found {len(rows)} pool rows")
+        except TimeoutException:
+            print(f"Timed out waiting for pools table for {coin_display_name}")
+            continue
+        except Exception as e:
+            print(f"Error loading pools for {coin_display_name}: {e}")
+            continue
+        
+        headers = [
+            "Rank", "Country", "Pool", "PoolFee", 
+            "Daily PPS $ / 100 TH", "MinPay", "Miners", 
+            "Hashrate", "Network %", "Blocks and Expected Block Diff", 
+            "BlockHeight", "LastFound"
+        ]
+        
+        coin_pools = []
+        count = 0
+        
+        for row in rows:
+            if "show1100" in row.get_attribute("class"):
+                continue
+                
+            try:
                 cells = row.find_elements(By.TAG_NAME, "td")
                 if len(cells) < 3:
                     continue
@@ -293,24 +350,27 @@ def scrape_coin_pools(driver, coin_data):
                 
                 if count >= 15:
                     break
-            
-            # Save coin raw pool data to temp dir
-            safe_name = re.sub(r'[^\w\-]', '_', coin_url_name)
-            coin_file = os.path.join(RAW_POOLS_DIR, f"{safe_name}_pools.csv")
-            
+            except Exception as e:
+                print(f"Error processing pool row: {e}")
+                continue
+        
+        # Save coin raw pool data to temp dir
+        safe_name = re.sub(r'[^\w\-]', '_', coin_url_name)
+        coin_file = os.path.join(RAW_POOLS_DIR, f"{safe_name}_pools.csv")
+        
+        try:
             with open(coin_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(headers)
                 writer.writerows(coin_pools)
             
-            print(f"  Processed {len(coin_pools)} pools")
-            time.sleep(2)  # to avoid bot detection
-            
+            print(f"  Saved {len(coin_pools)} pools for {coin_display_name}")
         except Exception as e:
-            print(f"Error scraping {coin_display_name}: {e}")
-            traceback.print_exc()
+            print(f"Failed to save pool data for {coin_display_name}: {e}")
+        
+        time.sleep(3)  # Avoid bot detection
     
-    print("All raw pool data saved")
+    print("Pool scraping completed")
 
 # Cleaning
 def normalise_country(raw: str) -> str:
@@ -331,39 +391,60 @@ def tidy_pool(name: str) -> str:
 def clean_single_file(in_path: str, out_path: str) -> None:
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
-    with open(in_path, newline="", encoding="utf-8") as fin, \
-         open(out_path, "w", newline="", encoding="utf-8") as fout:
+    try:
+        with open(in_path, newline="", encoding="utf-8") as fin, \
+             open(out_path, "w", newline="", encoding="utf-8") as fout:
 
-        reader, writer = csv.reader(fin), csv.writer(fout)
-        next(reader, None)
-        writer.writerow(KEEP_HEADER)
+            reader, writer = csv.reader(fin), csv.writer(fout)
+            next(reader, None)  # Skip original header
+            writer.writerow(KEEP_HEADER)
 
-        for row in reader:
-            if len(row) < max(KEEP_INDEXES) + 1:
-                continue
+            for row in reader:
+                if len(row) < max(KEEP_INDEXES) + 1:
+                    continue
 
-            cleaned = [row[i].strip() for i in KEEP_INDEXES]
-            cleaned[1] = normalise_country(cleaned[1])
-            cleaned[2] = tidy_pool(cleaned[2])
-            writer.writerow(cleaned)
+                cleaned = [row[i].strip() for i in KEEP_INDEXES]
+                cleaned[1] = normalise_country(cleaned[1])
+                cleaned[2] = tidy_pool(cleaned[2])
+                writer.writerow(cleaned)
+    except Exception as e:
+        print(f"Error cleaning file {in_path}: {e}")
 
 def clean_pool_data():
-    print("\nCleaning pool data\n")
+    print("\nCleaning pool data")
     cleaned_count = 0
+    
+    if not os.path.exists(RAW_POOLS_DIR):
+        print(f"Raw pools directory not found: {RAW_POOLS_DIR}")
+        return
     
     for fname in os.listdir(RAW_POOLS_DIR):
         if fname.lower().endswith(".csv"):
             in_path = os.path.join(RAW_POOLS_DIR, fname)
             out_path = os.path.join(CLEANED_POOLS_DIR, fname)
-            clean_single_file(in_path, out_path)
-            cleaned_count += 1
-            print(f"  {fname} complete")
+            
+            if not os.path.exists(in_path):
+                print(f"File not found: {in_path}")
+                continue
+                
+            try:
+                clean_single_file(in_path, out_path)
+                cleaned_count += 1
+                print(f"  Cleaned {fname}")
+            except Exception as e:
+                print(f"Failed to clean {fname}: {e}")
     
-    print(f"Cleaned {cleaned_count} pools")
+    print(f"Cleaned {cleaned_count} pool files")
 
-# Simplified driver setup for Ubuntu Server
+# Robust driver setup with virtual display
 def setup_driver():
-    print("Setting up Firefox driver for Ubuntu Server")
+    print("Setting up virtual display and Firefox driver")
+    
+    # Start virtual display
+    display = Display(visible=0, size=(1920, 1080))
+    display.start()
+    print("Virtual display started")
+    
     try:
         # Configure Firefox options
         options = webdriver.FirefoxOptions()
@@ -372,25 +453,31 @@ def setup_driver():
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         
-        # Set explicit paths for Ubuntu Server
+        # Set explicit paths
         options.binary_location = "/usr/bin/firefox"
-        service = FirefoxService(executable_path="/usr/local/bin/geckodriver")
+        service = FirefoxService(
+            executable_path="/usr/local/bin/geckodriver",
+            log_path=os.path.join(os.getcwd(), "geckodriver.log")  # Log file for debugging
+        )
         
         driver = webdriver.Firefox(service=service, options=options)
-        driver.set_window_size(1920, 1080)
+        driver.set_page_load_timeout(90)  # Increased page load timeout
+        driver.implicitly_wait(10)  # Implicit wait for elements
         print("Firefox driver initialized successfully")
-        return driver
+        return driver, display
     except Exception as e:
         print(f"Firefox setup failed: {e}")
         traceback.print_exc()
-        raise RuntimeError("Failed to initialize Firefox driver")
+        display.stop()
+        raise RuntimeError("Failed to initialize WebDriver")
 
 def main():
     start_time = time.time()
     driver = None
+    display = None
     
     try:
-        driver = setup_driver()
+        driver, display = setup_driver()
         
         top_coins_data = scrape_top_coins(driver)
         
@@ -402,7 +489,7 @@ def main():
         
         clean_pool_data()
         
-        # Time stats 
+        # Completion stats
         end_time = time.time()
         duration = end_time - start_time
         minutes = int(duration // 60)
@@ -419,7 +506,17 @@ def main():
         traceback.print_exc()
     finally:
         if driver:
-            driver.quit()
+            try:
+                driver.quit()
+                print("Browser closed")
+            except:
+                pass
+        if display:
+            try:
+                display.stop()
+                print("Virtual display stopped")
+            except:
+                pass
 
 if __name__ == "__main__":
     main()
