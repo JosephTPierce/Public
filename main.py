@@ -7,6 +7,8 @@ import traceback
 import shutil
 import zipfile
 import socket
+import pytz
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -259,7 +261,7 @@ def scrape_coin_pools(driver, coin_data):
                 writer.writerow(headers)
                 writer.writerows(coin_pools)
             
-            print(f"  Processed {len(coin_pools)} pools")
+            print(f"  Retrieved {len(coin_pools)} pools")
             time.sleep(2)  # For bot detection
             
         except Exception as e:
@@ -270,7 +272,6 @@ def scrape_coin_pools(driver, coin_data):
 
 # Cleaning 
 def normalise_country(raw: str) -> str:
-    """Standardize country names"""
     token = raw.strip().split(",", 1)[0].strip().strip('"')
     upper = token.upper()
     if TWO_LETTER_COUNTRY.match(upper):
@@ -373,7 +374,10 @@ def publish_to_web():
             shutil.copy2(src, WEB_DIR)
     
     # Create timestamped zip 
-    timestamp = time.strftime("%m%d%Y-%H_%M")
+    est = pytz.timezone('US/Eastern')
+    now_est = datetime.now(est)
+    timestamp = now_est.strftime("%Y%m%d-%H_%M")
+
     zip_path = os.path.join(WEB_DIR, f"mining_data_{timestamp}.zip")
     
     with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -424,6 +428,7 @@ def main():
         # Final output
         print("\n" + "="*50)
         print(f"Completed in {minutes}m {seconds}s")
+        print("\nFind the files at:")
         print(f"\n  http://{ip_address}/mining_data/")
         print("\nFiles:")
         print(f"  - Top20Coins.csv")
