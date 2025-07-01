@@ -373,7 +373,7 @@ def publish_to_web():
             shutil.copy2(src, WEB_DIR)
     
     # Create timestamped zip 
-    timestamp = time.strftime("%Y%m%d-%H_%M")
+    timestamp = time.strftime("%m%d%Y-%H_%M")
     zip_path = os.path.join(WEB_DIR, f"mining_data_{timestamp}.zip")
     
     with zipfile.ZipFile(zip_path, 'w') as zipf:
