@@ -336,12 +336,12 @@ def setup_driver():
         
         driver = webdriver.Firefox(service=service, options=options)
         driver.set_window_size(1920, 1080)
-        print("Firefox driver initialized successfully")
+        print("Firefox driver init completed")
         return driver
     except Exception as e:
         print(f"Firefox setup failed: {e}")
         traceback.print_exc()
-        raise RuntimeError("Failed to initialize Firefox driver")
+        raise RuntimeError("Failed to init Firefox driver")
 
 def cleanup_raw_data():
     print("\nCleaning up raw data...")
@@ -373,7 +373,7 @@ def publish_to_web():
             shutil.copy2(src, WEB_DIR)
     
     # Create timestamped zip 
-    timestamp = time.strftime("%Y%m%d-%H%M")
+    timestamp = time.strftime("%Y%m%d-%H_%M")
     zip_path = os.path.join(WEB_DIR, f"mining_data_{timestamp}.zip")
     
     with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -440,7 +440,6 @@ def main():
         if driver:
             driver.quit()
         display.stop()
-        print("Virtual display stopped")
 
 if __name__ == "__main__":
     main()
