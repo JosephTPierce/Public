@@ -24,9 +24,18 @@ import sys
 
 # Prints a home screen 
 def homeScreen():
-    print("=" * 50)
-    print("\nPython Port Scanner")
     print("\n" + "=" * 50)
+    print("""\n
+ _____          ______          _     _____                                 
+|_   _|         | ___ \        | |   /  ___|                                
+  | |_   _ ___  | |_/ /__  _ __| |_  \ `--.  ___ __ _ _ __  _ __   ___ _ __ 
+  | | | | / __| |  __/ _ \| '__| __|  `--. \/ __/ _` | '_ \| '_ \ / _ \ '__|
+  | | |_| \__ \ | | | (_) | |  | |_  /\__/ / (_| (_| | | | | | | |  __/ |   
+  \_/\__, |___/ \_|  \___/|_|   \__| \____/ \___\__,_|_| |_|_| |_|\___|_|   
+      __/ |                                                                 
+     |___/                                                                                                                                   
+""")
+    print("\n" + "=" * 50 + "\n")
 
 
 # Gets the target from the user
@@ -71,23 +80,26 @@ def checkHost(ip):
 # Asks user for a range of ports to scan
 def getPortRange():
     while True:
-        
-        # Gets starting and ending ports
-        try:
-            startPort = int(input("Enter starting port (1 - 65535): "))
-            endPort = int(input("Enter ending port (1 - 65535): "))
+        user_input = input("\nEnter port range (e.g. 20-8080): ").strip()
 
-            # Checks if port is valid
-            if 1 <= startPort <= 65535 and 1 <= endPort <= 65535:
+        try:
+            # Split on dash
+            startStr, endStr = user_input.split("-")
+
+            # Convert to int
+            startPort = int(startStr)
+            endPort = int(endStr)
+
+            # Validate range
+            if 1 <= startPort <= 65535 and 1 <= endPort <=65535:
                 if startPort <= endPort:
                     return startPort, endPort
-                
-            print("[-] Invalid port range")
+            
+            print("[-] Port range must be between 1 and 65535 and the starting port must be less than or equal to the ending port")
 
         except ValueError:
-            # If the user doesnt use a number
-            print("[-] Please enter numaric values only.")
-
+            # Raised if split or int conversion fails
+            print("[-] Invalid format. Use: start-end (example: 20-8080)")
 
 # Scans a port
 def scanPort(ip, port):
@@ -182,6 +194,7 @@ def main():
         if choice != "y":
             print("Exiting")
             break
+
 
 
 if __name__ == "__main__":
