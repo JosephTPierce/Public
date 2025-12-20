@@ -50,7 +50,7 @@ def checkHost(ip):
         socket.setdefaulttimeout(1)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # sets up a tcp internet connection
         s.settimeout(2)
-        s.connect(ip, 80)
+        s.connect((ip, 80))
         s.close()
 
         print("[+] Host is reachable")
@@ -134,11 +134,57 @@ def scanPorts(ip, startPort, endPort):
 
     # Start worker threads
     for _ in range(threadCount):
-        t - threading.Thread(target=worker, args=(ip, portQueue))
+        t = threading.Thread(target=worker, args=(ip, portQueue))
         t.daemon = True
         t.start()
 
     # Wait until all ports are scanned
     portQueue.join()
 
-### Start on step 7
+def runScanner(ip):
+    startPort, endPort = getPortRange()
+
+    print(f"\n [+] Scanning Ports {startPort} to {endPort} on {ip}\n")
+
+    scanPorts(ip, startPort, endPort)
+
+    print("\n[+] Scan Complete")
+
+def main():
+    while True:
+        # Show home screen
+        homeScreen()
+
+        # Ask for a target
+        ip = getTarget()
+
+        # If target is invalid restart loop
+        if ip is None:
+            continue
+
+        # Check if the host is reachable
+        #if not checkHost(ip):
+        #    print("[-] Skipping Scan")
+        #    continue
+
+        # Ask for port range
+        startPort, endPort = getPortRange()
+
+        print(f"\n[+] Starting scan on {ip}")
+        print(f"[+] Ports {startPort} to {endPort}\n")
+
+        # Multithreaded port scan
+        scanPorts(ip, startPort, endPort)
+
+        # Ask user if they want to run another scan
+        choice = input("\n Scan another target? (y/n) ").strip().lower()
+
+        if choice != "y":
+            print("Exiting")
+            break
+
+
+if __name__ == "__main__":
+    main()
+
+
