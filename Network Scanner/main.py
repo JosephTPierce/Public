@@ -1,5 +1,4 @@
 # TO-DO:
-# Make it so the scanner also tells you the service the port is running and what version it is
 # Allow export to CSV
 # Make a prettier home screen 
 
@@ -10,10 +9,11 @@ import queue
 import sys
 
 
+
 # Prints a home screen 
 def homeScreen():
     print("\n" + "=" * 50)
-    print("\n Welcome, this tool is a port scanner built in Python. It will eventually also tell you the service and version running on the open ports.")
+    print("\n Welcome, this tool is a port scanner built in Python writen by Tyler")
     print("\n" + "=" * 50 + "\n")
 
 
@@ -80,8 +80,8 @@ def getPortRange():
             # Raised if split or int conversion fails
             print("[-] Invalid format. Use: start-end (example: 20-8080)")
 
-# Scans a port
-def scanPort(ip, port):
+# Gets port connection
+def connection(ip, port):
     try:
         # Creates a TCP Socket (IPv4 + TCP)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,19 +96,23 @@ def scanPort(ip, port):
         s.close()
 
         if result == 0:
-            print(f"[OPEN] Port {port}")
+            service = COMMON_SERVICES.get(port, "Unknown")
 
-    except OSError:
-        #ignore network errors
+            banner = getBanner(ip,port)
+
+            if banner:
+                print(f"[OPEN] {port:<6} {service:<15} {banner}")
+            else:
+                print(f"[OPEN] {port:<6} {service:<15}")
+    except:
         pass
-
 
 # Single thread worker
 def worker(ip, portQueue):
     # Each thread runs this function, it pulls ports from the queue and scans them
     while not portQueue.empty():
         port = portQueue.get()
-        scanPort(ip, port)
+        connection(ip, port)
         portQueue.task_done()
 
 
@@ -141,6 +145,78 @@ def runScanner(ip):
 
     print("\n[+] Scan Complete")
 
+
+
+COMMON_SERVICES = {
+    # Remote Access
+    21: "FTP",
+    22: "SSH",
+    23: "Telnet",
+    3389: "RDP",
+    5900: "VNC",
+
+    # Web
+    80: "HTTP",
+    443: "HTTPS",
+    8080: "HTTP-Alt",
+    8443: "HTTPS-Alt",
+
+    # Mail
+    25: "SMTP",
+    110: "POP3",
+    143: "IMAP",
+    465: "SMTPS",
+    587: "SMTP-Submission",
+    993: "IMAPS",
+    995: "POP3S",
+
+    # Databases
+    1433: "MSSQL",
+    1521: "Oracle",
+    3306: "MySQL",
+    5432: "PostgreSQL",
+    6379: "Redis",
+    27017: "MongoDB",
+
+    # File Sharing
+    139: "NetBIOS",
+    445: "SMB",
+    2049: "NFS",
+
+    # Infrastructure / Security
+    53: "DNS",
+    123: "NTP",
+    161: "SNMP",
+    389: "LDAP",
+    636: "LDAPS",
+    500: "ISAKMP",
+    1900: "UPnP",
+
+    # Dev / Admin
+    8000: "Dev-HTTP",
+    9000: "Dev-HTTP",
+}
+
+
+def getBanner(ip, port):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
+        s.connect((ip, port))
+
+        banner = s.recv(1024)
+        s.close()
+
+        return banner.decode(errors="ignore").strip()
+    except:
+        return None
+
+
+
+
+
+
+
 def main():
     while True:
         # Show home screen
@@ -168,7 +244,7 @@ def main():
         scanPorts(ip, startPort, endPort)
 
         # Ask user if they want to run another scan
-        choice = input("\n Scan another target? (y/n) ").strip().lower()
+        choice = input("\nScan another target? (y/n) ").strip().lower()
 
         if choice != "y":
             print("Exiting")
