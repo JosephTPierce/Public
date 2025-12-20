@@ -25,16 +25,7 @@ import sys
 # Prints a home screen 
 def homeScreen():
     print("\n" + "=" * 50)
-    print("""\n
- _____          ______          _     _____                                 
-|_   _|         | ___ \        | |   /  ___|                                
-  | |_   _ ___  | |_/ /__  _ __| |_  \ `--.  ___ __ _ _ __  _ __   ___ _ __ 
-  | | | | / __| |  __/ _ \| '__| __|  `--. \/ __/ _` | '_ \| '_ \ / _ \ '__|
-  | | |_| \__ \ | | | (_) | |  | |_  /\__/ / (_| (_| | | | | | | |  __/ |   
-  \_/\__, |___/ \_|  \___/|_|   \__| \____/ \___\__,_|_| |_|_| |_|\___|_|   
-      __/ |                                                                 
-     |___/                                                                                                                                   
-""")
+    print("\n Welcome, this tool is a port scanner built in Python. It will eventually also tell you the service and version running on the open ports.")
     print("\n" + "=" * 50 + "\n")
 
 
