@@ -3,6 +3,7 @@
 # --------------------------------
 
 
+
 # TODO:
 # - Find a way to pin Outlook and teams to task bar
 # - Find a way to pin Outlook and teams to start menu
@@ -51,7 +52,7 @@ function setSleepSetting {
 }
 
 
-
+# ADD PROGRAMS TO REMOVE
 function removeApps {
 
     winget uninstall "Xbox TCUI"
@@ -87,6 +88,8 @@ function installEncompass {
     }
 
 }
+
+
 
 # ---------- MAIN ----------
 
