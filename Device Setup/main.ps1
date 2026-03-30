@@ -1,6 +1,21 @@
-### Script to uninstall apps
+# ----------------------------------
+# Script to assist with device setup
+# --------------------------------
 
-# ----------
+
+
+
+# ---------- VARS ----------
+
+
+$zipFile = "C:\Users\TylerPierce\Downloads\Acrobat_DC_Web_x64_WWMUI.zip"
+$extractPath = "C:\Users\TylerPierce\Downloads\AdobeInstall"
+$installer = Get-ChildItem -Path $extractPath -Filter "setup.exe" -Recurse | Select-Object -First 1
+
+
+
+# ---------- METHODS ----------
+
 
 # WORKS 
 function removeApps {
@@ -9,9 +24,6 @@ function removeApps {
 }
 
 
-$zipFile = "C:\Users\TylerPierce\Downloads\Acrobat_DC_Web_x64_WWMUI.zip"
-$extractPath = "C:\Users\TylerPierce\Downloads\AdobeInstall"
-$installer = Get-ChildItem -Path $extractPath -Filter "setup.exe" -Recurse | Select-Object -First 1
 
 # WORKS 
 function downloadAdobe {
@@ -24,17 +36,7 @@ function downloadAdobe {
     Write-Host "Finished downloading Adobe"
 }
 
-function extractingAdobe {
 
-    # Checks to see if folder exists, if it doesnt then makes it 
-    if (!(Test-Path $extractPath)) {
-        New-Item -ItemType Directory -Path $extractPath
-    }
-
-    # Run command 
-    Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
-
-}
 
 function installAdobe {
 
@@ -54,9 +56,34 @@ function installAdobe {
 
 }
 
-# ----------
 
-### Main
+
+# ---------- MAIN ----------
+
 #downloadAdobe
 #extractingAdobe
 installAdobe
+
+
+
+
+
+
+
+
+
+# ----- UNUSED FUNCTIONS -----
+
+
+# WAS USED WHEN DOWNLOADING A ZIP, NOW DOWNLOADING EXE FILE INSTEAD
+ function extractingAdobe {
+
+    # Checks to see if folder exists, if it doesnt then makes it 
+    if (!(Test-Path $extractPath)) {
+        New-Item -ItemType Directory -Path $extractPath
+    }
+
+    # Run command 
+    Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
+
+}
