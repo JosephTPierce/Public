@@ -4,16 +4,6 @@
 
 
 
-# TODO:
-# - Find a way to pin Outlook and teams to task bar
-# - Find a way to pin Outlook and teams to start menu
-# - Find a way to unpin items from taskbar
-# - Find a way to unpin items from start menu
-
-# - Find a way to open or sign into OneDrive -- cant automate 
-# - See if I can set homepage to myapps.microsoft.com in edge -- kinda works. Could just open it instad
-
-
 
 # ---------- VARS ----------
 
