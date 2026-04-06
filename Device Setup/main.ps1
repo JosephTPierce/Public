@@ -3,6 +3,13 @@
 # ----------------------------------
 
 
+# TODO:
+# - Can I change the power mode to best perfomance when plugged in?
+# - Add other programs to remove, see pictures
+# - Can I set myapps as a bookmark at least? 
+
+
+
 
 
 # ---------- VARS ----------
@@ -44,19 +51,20 @@ function setSleepSetting {
 # What happens if you try to remove an app that doesnt exist?
 function removeApps {
 
-    # Definete removal
+    # List of apps to remove
 
     winget uninstall "Xbox TCUI"
     winget uninstall "Xbox Identity Provider"
     winget uninstall "Xbox"
     winget uninstall "Game Bar"
-
-
-    # possible removal 
-
+    winget uninstall "McAfee"
     winget uninstall "Lenovo Vantage Service"
+    winget uninstall "Lenovo Smart Meeting Components"
     winget uninstall "Lenovo Commercial Vantage"
-    winget uninstall "Xbox Identity Provider"
+    winget uninstall "WebAdvisor by McAfee"
+    winget uninstall "Lenovo Now"
+    winget uninstall "Lenovo Vantage"
+    winget uninstall "Lenovo Smart Meeting"
 
 }
 
