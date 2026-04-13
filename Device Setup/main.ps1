@@ -3,14 +3,6 @@
 # ----------------------------------
 
 
-# TODO:
-# - Can I change the power mode to best perfomance when plugged in?
-# - Add other programs to remove, see pictures
-# - Can I set myapps as a bookmark at least? 
-
-
-
-
 
 # ---------- VARS ----------
 
@@ -25,25 +17,6 @@ $encompassFile = "$downloadPath\EncompassDesktop.exe"
 function setTimeZone {
 
     Set-TimeZone -Name "Eastern Standard Time"
-
-}
-
-
-# Do we want to use this? It block the ability to change it in the GUI
-function setPowerPlan {
-
-    powercfg /setactive SCHEME_MIN
-
-}
-
-
-
-function setSleepSetting {
-
-    # Sets monitor to turn off after 2 hours
-    powercfg /change monitor-timeout-ac 120
-    # Sets computer to sleep after 2 hours
-    powercfg /change standby-timeout-ac 120
 
 }
 
@@ -98,27 +71,6 @@ function installEncompass {
 }
 
 
-# Do we want to do this? It locks out the user from changing it later.
-function setEdgeHomepage {
-    
-    $homepageURL = "https://myapps.microsoft.com"
-
-    $edgePoliciesPath = "HKCU:\SOFTWARE\Policies\Microsoft\Edge"
-
-    # Create policy key if it doesn't exist
-    New-Item -Path $edgePoliciesPath -Force | Out-Null
-
-    # Get edge to open start page
-    Set-ItemProperty -Path $edgePoliciesPath -Name "RestoreOnStartup" -Value 4
-
-    # Make URL list key
-    New-Item -Path "$edgePoliciesPath\RestoreOnStartupURLs" -Force | Out-Null
-
-    # Set homepage URL
-    Set-ItemProperty -Path "$edgePoliciesPath\RestoreOnStartupURLs" -Name "1" -Value $homepageURL
-    
-}
-
 
 # Opens rename menu
 function renameComputer {
@@ -131,8 +83,11 @@ function renameComputer {
 
 }
 
+
+
 # ---------- MAIN ----------
 
+#removeApps
 #installAdobe
 #downloadEncompass
 #installEncompass
