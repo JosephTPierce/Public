@@ -4,14 +4,25 @@
 
 
 
-# ---------- VARS ----------
+# What needs to be done manually:
+# - Sign in to OneDrive
+# - Pin/unpin apps to taskbar/start menu
+# - Set homepage in Edge
+# - Set encompass instanceID
+# - Set powermode/sleep settings 
+# - Enter in laptop name (script opens menu but does not enter name for you)
+# - Add device to inventory
+
+
+
+# ---------- VARS --------------
 
 $encompassURL = "https://download.elliemae.com/encompass/install/smartclient/enc360/EncompassDesktop.exe"
 $downloadPath = "$env:USERPROFILE\Downloads"
 $encompassFile = "$downloadPath\EncompassDesktop.exe"
 
-# ---------- METHODS ----------
 
+# ---------- METHODS ----------
 
 
 function setTimeZone {
@@ -21,7 +32,7 @@ function setTimeZone {
 }
 
 
-# What happens if you try to remove an app that doesnt exist?
+
 function removeApps {
 
     # List of apps to remove
@@ -75,7 +86,7 @@ function installEncompass {
 # Opens rename menu
 function renameComputer {
 
-    # Opens system menu when you can rename computer and see users name
+    # Opens system menu where you can rename
     Start-Process "ms-settings:about"
 
     # Opens rename box but cant see users name 
