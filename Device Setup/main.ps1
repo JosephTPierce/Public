@@ -42,13 +42,16 @@ function removeApps {
     winget uninstall "Xbox"
     winget uninstall "Game Bar"
     winget uninstall "McAfee"
+    winget uninstall "Lenovo Vantage"
     winget uninstall "Lenovo Vantage Service"
     winget uninstall "Lenovo Smart Meeting Components"
     winget uninstall "Lenovo Commercial Vantage"
-    winget uninstall "WebAdvisor by McAfee"
-    winget uninstall "Lenovo Now"
-    winget uninstall "Lenovo Vantage"
     winget uninstall "Lenovo Smart Meeting"
+    winget uninstall "Lenovo Smart Noise Cancellation"
+    winget uninstall "Lenovo Smart Noise Cancellation Settings"
+    winget uninstall "WebAdvisor by McAfee"
+    winget uninstall "Family"
+    winget uninstall "Feedback Hub"
 
 }
 
