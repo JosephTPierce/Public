@@ -88,6 +88,23 @@ function installEncompass {
 }
 
 
+# Stole AJs code for this -- see if it still lets the user change afterwards
+function setPowerSettings {
+    
+    # Plugged-in only (AC)
+
+    powercfg /change monitor-timeout-ac 15
+    powercfg /change standby-timeout-ac 0
+
+
+    # Lid close = Do nothing (AC only)
+
+    $scheme = (powercfg -getactivescheme) -replace ".*GUID:\s*([a-fA-F0-9\-]+).*",'$1'
+    powercfg -setacvalueindex $scheme 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
+    powercfg -S $scheme
+    
+}
+
 
 # Opens rename menu
 function renameComputer {
@@ -110,4 +127,5 @@ function renameComputer {
 #removeApps
 #downloadEncompass
 #installEncompass
-renameComputer
+#renameComputer
+setPowerSettings
