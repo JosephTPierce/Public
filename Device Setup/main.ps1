@@ -41,17 +41,20 @@ function removeApps {
     winget uninstall "Xbox Identity Provider"
     winget uninstall "Xbox"
     winget uninstall "Game Bar"
-    winget uninstall "McAfee"
+    winget uninstall --id McAfee.wps -e 
+    winget uninstall --id McAfeeWPSSparsePackage -e 
     winget uninstall "Lenovo Vantage"
     winget uninstall "Lenovo Vantage Service"
     winget uninstall "Lenovo Smart Meeting Components"
     winget uninstall "Lenovo Commercial Vantage"
     winget uninstall "Lenovo Smart Meeting"
     winget uninstall "Lenovo Smart Noise Cancellation"
-    winget uninstall "Lenovo Smart Noise Cancellation Settings"
+    winget uninstall "Elevoc Smart Noise Cancellation Settings" #Lenovo Smart Noise Cancellation
     winget uninstall "WebAdvisor by McAfee"
-    winget uninstall "Family"
     winget uninstall "Feedback Hub"
+    winget uninstall "Microsoft Journal"
+    winget uninstall "Microsoft Family"
+    winget uninstall "Smart Connect"
 
 }
 
@@ -77,7 +80,7 @@ function installEncompass {
 
     # Checks to see if file exists, then runs it 
     if(Test-Path $encompassFile) {
-        Start-Process -FilePath $encompassFile -Wait
+        Start-Process -FilePath $encompassFile -Verb RunAs -Wait
     } else {
         Write-Host "Encompass installer not found"
     }
@@ -93,7 +96,7 @@ function renameComputer {
     Start-Process "ms-settings:about"
 
     # Opens rename box but cant see users name 
-    #Start-Process "SystemPropertiesComputerName"
+    #Start-Process "SystemPropertiesComputerName.exe"
 
 }
 
@@ -101,9 +104,10 @@ function renameComputer {
 
 # ---------- MAIN ----------
 
-#removeApps
+
 #installAdobe
+#setTimeZone
+#removeApps
 #downloadEncompass
 #installEncompass
-#setTimeZone
-#renameComputer
+renameComputer
