@@ -55,6 +55,20 @@ function removeApps {
     winget uninstall "Microsoft Journal"
     winget uninstall "Microsoft Family"
     winget uninstall "Smart Connect"
+    winget uninstall "Poly Camera Pro"
+    winget uninstall "HP PC Hardware Diagnostics Windows"
+    winget uninstall "HP Privacy Settings"
+    winget uninstall "HP Support Assistant"
+    winget uninstall "HP System Information"
+    winget uninstall "myHP"
+    winget uninstall "HP Sure Run Module"
+    winget uninstall "HP Notifications"
+    winget uninstall "HP Security Update Service"
+    winget uninstall "Poly Camera Pro Compatibility Add-on"
+    winget uninstall "Poly Lens Desktop"
+    winget uninstall "Poly Lense Control Service"
+    winget uninstall "HP Sure Recover"
+    winget uninstall "HP Wolf Security - Console" 
 
 }
 
@@ -88,7 +102,7 @@ function installEncompass {
 }
 
 
-# Stole AJs code for this -- see if it still lets the user change afterwards
+# AJ is setting this through intune, but leave here in case. 
 function setPowerSettings {
     
     # Plugged-in only (AC)
@@ -118,15 +132,21 @@ function renameComputer {
 }
 
 
+# See if this still auto-populates the email field.
+function openOneDrive {
+    Start-Process "explorer.exe" -ArgumentList "odopen://launch"
+}
+
+
 
 # ---------- MAIN ----------
 
 
 
-#installAdobe
-#setTimeZone
-#removeApps
-#downloadEncompass
-#installEncompass
-#renameComputer
-setPowerSettings
+installAdobe
+setTimeZone
+removeApps
+downloadEncompass
+installEncompass
+renameComputer
+openOneDrive
